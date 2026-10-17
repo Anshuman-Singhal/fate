@@ -1,0 +1,1 @@
+{"description":"A Magic 8-ball with a statistics degree: yes/no questions answered with calibrated probabilities from a decision model, plus Brier-scored forecasting practice.","license":"MIT","name":"fate","scripts":{"demo":"./demo.sh","start":"bun src/main.ts","test":"bun test"},"type":"module","version":"1.0.0"}
