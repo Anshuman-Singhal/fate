@@ -96,15 +96,27 @@ fate/
   demo.sh        one-command full demo in a temp dir
 ```
 
-## What a recruiter should notice
+## Design decisions and tradeoffs
 
-The interesting engineering is the adapter seam: a new model class (decisions,
-not generations) integrated behind an interface where the mock is the default
-and the live model is a config change, which is exactly how you ship AI
-features to customers who cannot hand you an API key on day one. The math is
-real but legible (log-odds evidence combination, proper scoring rules), the
-CLI is composable (`--json` everywhere), and the whole thing is one clean
-TypeScript codebase with tests that run in a third of a second.
+- **Mock first, live model as a config change.** The deterministic judge is
+  the default and the Jev adapter sits behind the same `Judge` interface.
+  That makes the whole tool testable offline, and it mirrors how AI features
+  actually get deployed: you build and demo against a stand-in before the
+  customer can hand you credentials, then flip one environment variable.
+- **Average the evidence, don't sum it.** Factors are combined in log-odds
+  space and divided by total weight. Summing would let someone push any
+  answer toward 0% or 100% just by listing more reasons. Averaging means a
+  forecast moves because the evidence is strong, not because it is long.
+- **State the independence assumption instead of hiding it.** Correlated
+  factors will double count. Rather than pretend otherwise, the CLI prints
+  every factor's contribution so you can see when two reasons are really
+  one.
+- **Score with a proper scoring rule.** Brier score rewards honest
+  probabilities: you cannot game it by always saying 90% or always saying
+  50%. Skill is reported against an always-50% baseline, so "good" has a
+  concrete meaning.
+- **One batched request per question.** All factors go to the model in a
+  single call, which keeps latency and cost flat as the factor count grows.
 
 ## License
 
